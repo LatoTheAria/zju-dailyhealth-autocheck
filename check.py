@@ -156,6 +156,12 @@ class HealthCheckInHelper(ZJULogin):
 
         response = self.sess.get('https://restapi.amap.com/v3/geocode/regeo', headers=self.headers, params=params, )
         return take_out_json(response.text)
+    
+    def post(self):
+        """Post the hit card info."""
+        time.sleep(1)
+        res = self.sess.post(self.save_url, data=self.info)
+        return json.loads(res.text)
 
     def take_in(self, geo_info: dict):
         formatted_address = geo_info.get("regeocode").get("formatted_address")
@@ -313,18 +319,28 @@ class HealthCheckInHelper(ZJULogin):
                 # 👆-----2022.5.7日修改-----👆
             }
             data.update(verify_code)
-            response = self.sess.post('https://healthreport.zju.edu.cn/ncov/wap/default/save', data=data,
-                                    headers=self.headers)
-            return response.json()
+            try:
+                res = hit_carder.post()
+                print(res)
+                if str(res['e']) == '0':
+                    return '打卡成功'
+                elif str(res['m']) == '今天已经填报了':
+                    return '今天已经打卡'
+                else:
+                    return '打卡失败'
+            except:
+                return '打卡数据提交失败'
+            # response = self.sess.post('https://healthreport.zju.edu.cn/ncov/wap/default/save', data=data, headers=self.headers)
+            # return response.json()
 
     def Push(self,res):
         if res:
             if self.CHAT_ID and self.TG_TOKEN :
-                post_tg('浙江大学每日健康打卡 V3.0 '+ f" \n\n 签到结果:{res}", self.CHAT_ID, self.TG_TOKEN) 
+                post_tg(f" \n\n 签到结果:{res}", self.CHAT_ID, self.TG_TOKEN) 
             else:
                 print("telegram推送未配置,请自行查看签到结果")
             if self.DD_BOT_TOKEN:
-                ding= dingpush('浙江大学每日健康打卡 V3.0 ', res,self.DD_BOT_TOKEN,self.DD_BOT_SECRET)
+                ding= dingpush(res,self.reminders,self.DD_BOT_TOKEN,self.DD_BOT_SECRET)
                 ding.SelectAndPush()
             else:
                 print("钉钉推送未配置，请自行查看签到结果")

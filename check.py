@@ -324,7 +324,7 @@ class HealthCheckInHelper(ZJULogin):
             else:
                 print("telegram推送未配置,请自行查看签到结果")
             if self.DD_BOT_TOKEN:
-                ding= dingpush('浙江大学每日健康打卡 V3.0 ', res,self.reminders,self.DD_BOT_TOKEN,self.DD_BOT_SECRET)
+                ding= dingpush('浙江大学每日健康打卡 V3.0 ', res,self.DD_BOT_TOKEN,self.DD_BOT_SECRET)
                 ding.SelectAndPush()
             else:
                 print("钉钉推送未配置，请自行查看签到结果")
